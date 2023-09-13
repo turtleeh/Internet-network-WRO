@@ -1,0 +1,38 @@
+#include <SPI.h>
+#include <nRF24L01.h>
+#include <RF24.h>
+
+RF24 radio(7, 8); // CE, CSN
+
+const byte ID[6] = "00002";
+const byte next_node[6] = "00003";
+
+void setup() {
+  Serial.begin(9600);
+  radio.begin();
+  radio.setPALevel(RF24_PA_MIN);
+  Listen();
+}
+
+void loop() {
+  if (radio.available()) {
+    char r[32] = "";
+    radio.read(&r, sizeof(r));
+    Serial.println(r);
+    Write();
+    radio.write(r,sizeof(r));
+    Listen();
+  }
+}
+
+void Listen() {
+  radio.begin();
+  radio.openReadingPipe(0, ID);
+  radio.startListening();
+}
+
+void Write() {
+  radio.begin();
+  radio.openWritingPipe(next_node);
+  radio.stopListening();
+}
